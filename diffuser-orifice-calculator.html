@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Compression at Depth Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .calculator {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        input[type="number"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .unit-toggle {
+            display: flex;
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 4px;
+        }
+        
+        .unit-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: #718096;
+        }
+        
+        .unit-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .results {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        
+        .result-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .result-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .result-label {
+            color: #718096;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .result-value {
+            color: #2d3748;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .result-secondary {
+            color: #667eea;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .visual-bar {
+            margin-top: 15px;
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .visual-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .formula {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #4a5568;
+            border-left: 4px solid #667eea;
+        }
+        
+        .orifice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        
+        .orifice-table th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .orifice-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .orifice-table tr.recommended {
+            background: #f0f4ff;
+            font-weight: 600;
+        }
+        
+        .orifice-table tr.recommended td:first-child {
+            border-left: 4px solid #667eea;
+        }
+        
+        .chart-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+        
+        .chart-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .chart-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chart-label {
+            width: 60px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .chart-bar-track {
+            flex: 1;
+            height: 24px;
+            background: #f7fafc;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-bar-fill {
+            height: 100%;
+            background: #cbd5e0;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .chart-bar-fill.highlight {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .chart-range {
+            font-size: 11px;
+            color: #718096;
+            width: 100px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Diffuser Orifice Sizing Calculator</h1>
+        <p class="subtitle">Calculate orifice size recommendations for submerged aeration diffusers</p>
+        
+        <div class="input-group">
+            <label>Water Depth <span style="color: #718096; font-weight: normal;">(meters)</span></label>
+            <div class="input-wrapper">
+                <input type="number" id="depth" value="15" min="0" step="0.1">
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label>Elevation Above Sea Level <span style="color: #718096; font-weight: normal;">(meters, optional)</span></label>
+            <div class="input-wrapper">
+                <input type="number" id="elevation" value="0" min="0" max="5000" step="10">
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label>Airflow Rate per Diffuser <span style="color: #718096; font-weight: normal;">(Sm³/hr)</span></label>
+            <div class="input-wrapper">
+                <input type="number" id="airflow" value="3.0" min="0" step="0.1">
+            </div>
+        </div>
+        
+        <div class="results">
+            <div class="result-item">
+                <div class="result-label">Pressure at Submerged Aeration Grid</div>
+                <div class="result-value" id="pressure">2.5 kg/cm²</div>
+                <div class="result-secondary" id="pressure-alt">2.5 bar | 36.3 psi</div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">Compression Ratio</div>
+                <div class="result-value" id="ratio">2.5:1</div>
+                <div class="result-secondary" id="density">Air density increased by 2.5×</div>
+            </div>
+            
+            <div class="result-item" style="background: linear-gradient(135deg, #f0f4ff 0%, #e8f0ff 100%); padding: 20px; border-radius: 8px; margin-top: 10px; border-bottom: none;">
+                <div class="result-label" style="color: #667eea;">Recommended Orifice Size</div>
+                <div class="result-value" id="orifice-size" style="color: #667eea;">6.0 mm</div>
+                <div class="result-secondary" style="color: #2d3748; margin-top: 8px; font-weight: 600;" id="orifice-recommendation">
+                    ✓ For 3.0 Sm³/hr at 15.0 m depth
+                </div>
+                
+                <table class="orifice-table">
+                    <thead>
+                        <tr>
+                            <th>Orifice Size</th>
+                            <th>Min Flow (Sm³/hr)</th>
+                            <th>Max Flow (Sm³/hr)</th>
+                            <th>Min Flow (Am³/hr)</th>
+                            <th>Max Flow (Am³/hr)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orifice-table-body">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Operating Range by Orifice Size</div>
+                    <div class="chart-bars" id="chart-bars">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Baseline specification: 6mm orifice
+        // Minimum: 1.5 sm³/hr (prevent clogging)
+        // Maximum: 7 sm³/hr (continuous operation)
+        const BASELINE_ORIFICE_MM = 6.0;
+        const BASELINE_MIN_FLOW_SM3HR = 1.5;
+        const BASELINE_MAX_FLOW_SM3HR = 7.0;
+        
+        // Standard diffuser orifice sizes (mm)
+        const STANDARD_ORIFICE_SIZES = [2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0];
+        
+        function getOrificeSizeRange(orificeMm) {
+            // Flow scales with area (d²)
+            const areaRatio = Math.pow(orificeMm / BASELINE_ORIFICE_MM, 2);
+            const minFlow = BASELINE_MIN_FLOW_SM3HR * areaRatio;
+            const maxFlow = BASELINE_MAX_FLOW_SM3HR * areaRatio;
+            return { minFlow, maxFlow };
+        }
+        
+        function getAtmosphericPressure(elevationMeters) {
+            // Atmospheric pressure decreases with altitude
+            // Approximate formula: P = P0 * exp(-Mg*h/(R*T))
+            // Simplified: P ≈ P0 * (1 - h/44300) for h < 11000m
+            // More accurate: use barometric formula
+            const P0 = 1.01325; // bar at sea level
+            const pressure = P0 * Math.pow(1 - (elevationMeters / 44330), 5.255);
+            return pressure;
+        }
+        
+        function calculate() {
+            let depth = parseFloat(document.getElementById('depth').value) || 0;
+            let elevation = parseFloat(document.getElementById('elevation').value) || 0;
+            let airflowSm3hr = parseFloat(document.getElementById('airflow').value) || 0;
+            
+            // Calculate atmospheric pressure at elevation
+            const atmosphericPressure = getAtmosphericPressure(elevation);
+            
+            // Calculate water pressure (1 bar per 10m)
+            const waterPressure = depth / 10; // bar
+            
+            // Total absolute pressure
+            const absolutePressure = atmosphericPressure + waterPressure;
+            
+            // Convert to kg/cm² (1 bar = 1.0197 kg/cm²)
+            const pressureKgCm2 = absolutePressure * 1.0197;
+            
+            // Compression ratio
+            const compressionRatio = absolutePressure;
+            
+            // Display pressure
+            const pressurePsi = absolutePressure * 14.504;
+            document.getElementById('pressure').textContent = pressureKgCm2.toFixed(2) + ' kg/cm²';
+            document.getElementById('pressure-alt').textContent = absolutePressure.toFixed(2) + ' bar | ' + pressurePsi.toFixed(1) + ' psi';
+            
+            // Display ratio
+            document.getElementById('ratio').textContent = compressionRatio.toFixed(2) + ':1';
+            document.getElementById('density').textContent = 
+                'Air density increased by ' + compressionRatio.toFixed(2) + '×';
+            
+            // Find recommended orifice size with turndown/turnup capability
+            // Strategy: find orifice where input flow is in the middle 60% of range
+            // This provides ~40% turndown and ~40% turnup capability
+            let recommendedOrifice = null;
+            let bestScore = -1;
+            
+            for (const size of STANDARD_ORIFICE_SIZES) {
+                const range = getOrificeSizeRange(size);
+                
+                // Check if flow is within range
+                if (airflowSm3hr >= range.minFlow && airflowSm3hr <= range.maxFlow) {
+                    // Calculate position in range (0 = min, 1 = max)
+                    const position = (airflowSm3hr - range.minFlow) / (range.maxFlow - range.minFlow);
+                    
+                    // Best position is around 0.5 (middle), score based on distance from ideal
+                    // Prefer range where input is between 30-70% of capacity
+                    const score = 1 - Math.abs(position - 0.5);
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        recommendedOrifice = size;
+                    }
+                }
+            }
+            
+            // If no orifice found in optimal range, just find one that works
+            if (!recommendedOrifice) {
+                for (const size of STANDARD_ORIFICE_SIZES) {
+                    const range = getOrificeSizeRange(size);
+                    if (airflowSm3hr >= range.minFlow && airflowSm3hr <= range.maxFlow) {
+                        recommendedOrifice = size;
+                        break;
+                    }
+                }
+            }
+            
+            // If flow is too high for largest orifice
+            if (!recommendedOrifice && airflowSm3hr > getOrificeSizeRange(STANDARD_ORIFICE_SIZES[STANDARD_ORIFICE_SIZES.length - 1]).maxFlow) {
+                recommendedOrifice = STANDARD_ORIFICE_SIZES[STANDARD_ORIFICE_SIZES.length - 1];
+            }
+            
+            // If flow is too low for smallest orifice
+            if (!recommendedOrifice && airflowSm3hr < getOrificeSizeRange(STANDARD_ORIFICE_SIZES[0]).minFlow) {
+                recommendedOrifice = STANDARD_ORIFICE_SIZES[0];
+            }
+            
+            // Display recommended orifice
+            if (recommendedOrifice) {
+                const range = getOrificeSizeRange(recommendedOrifice);
+                const turndownPercent = ((airflowSm3hr - range.minFlow) / airflowSm3hr * 100);
+                const turnupPercent = ((range.maxFlow - airflowSm3hr) / airflowSm3hr * 100);
+                
+                document.getElementById('orifice-size').textContent = recommendedOrifice.toFixed(1) + ' mm';
+                
+                document.getElementById('orifice-recommendation').textContent = 
+                    `✓ For ${airflowSm3hr.toFixed(2)} Sm³/hr at ${depth.toFixed(1)} m depth | ` +
+                    `Turndown: ${turndownPercent.toFixed(0)}% | Turnup: ${turnupPercent.toFixed(0)}%`;
+            } else {
+                document.getElementById('orifice-size').textContent = '-- mm';
+                document.getElementById('orifice-recommendation').textContent = 'No suitable orifice size';
+            }
+            
+            // Populate orifice table
+            const tableBody = document.getElementById('orifice-table-body');
+            tableBody.innerHTML = '';
+            
+            STANDARD_ORIFICE_SIZES.forEach(size => {
+                const range = getOrificeSizeRange(size);
+                
+                // Calculate actual flows at depth (Am³/hr)
+                const minActualFlow = range.minFlow / absolutePressure;
+                const maxActualFlow = range.maxFlow / absolutePressure;
+                
+                const row = document.createElement('tr');
+                if (size === recommendedOrifice) {
+                    row.classList.add('recommended');
+                }
+                
+                row.innerHTML = `
+                    <td>${size.toFixed(1)} mm</td>
+                    <td>${range.minFlow.toFixed(2)}</td>
+                    <td>${range.maxFlow.toFixed(2)}</td>
+                    <td>${minActualFlow.toFixed(2)}</td>
+                    <td>${maxActualFlow.toFixed(2)}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Populate chart
+            const chartBars = document.getElementById('chart-bars');
+            chartBars.innerHTML = '';
+            
+            // Find max flow for scaling
+            const maxChartFlow = getOrificeSizeRange(STANDARD_ORIFICE_SIZES[STANDARD_ORIFICE_SIZES.length - 1]).maxFlow;
+            
+            STANDARD_ORIFICE_SIZES.forEach(size => {
+                const range = getOrificeSizeRange(size);
+                const percentWidth = (range.maxFlow / maxChartFlow) * 100;
+                
+                const row = document.createElement('div');
+                row.className = 'chart-row';
+                
+                const isHighlighted = size === recommendedOrifice;
+                
+                row.innerHTML = `
+                    <div class="chart-label">${size.toFixed(1)} mm</div>
+                    <div class="chart-bar-track">
+                        <div class="chart-bar-fill ${isHighlighted ? 'highlight' : ''}" 
+                             style="width: ${percentWidth}%"></div>
+                    </div>
+                    <div class="chart-range">${range.minFlow.toFixed(1)} - ${range.maxFlow.toFixed(1)}</div>
+                `;
+                
+                chartBars.appendChild(row);
+            });
+        }
+        
+        // Add event listeners
+        document.getElementById('depth').addEventListener('input', calculate);
+        document.getElementById('elevation').addEventListener('input', calculate);
+        document.getElementById('airflow').addEventListener('input', calculate);
+        
+        // Initial calculation
+        calculate();
+    </script>
+</body>
+</html>
